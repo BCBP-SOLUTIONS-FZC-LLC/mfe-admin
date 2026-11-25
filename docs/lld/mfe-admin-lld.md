@@ -5,20 +5,36 @@
 | | |
 |---|---|
 | Repository | `BCBP-SOLUTIONS-FZC-LLC/mfe-admin` (proposed; **not created yet**) |
-| Status | **Draft design.** No code exists. This document is written from the IAM screen spec and the structure and rules of the sibling remote `mfe-tender`, not from running code. Where it says "inherited", the rule comes from `mfe-tender`'s LLD or web-shell's; where it says "proposed", it is a decision for review (§15) |
-| Version | `0.1` (draft), 24 November 2026. First release target: none set |
-| Host | `web-shell`, mounting this remote at `/t/<slug>/admin/*` with `RemoteBoundary remote="admin"`, no props, `ownerDomain: iam`. **web-shell has no admin route yet** (its latest release is `v0.4.0`, with `dashboard` and `tenders` only); see [web-shell-iam-handoff.md](web-shell-iam-handoff.md) |
-| Platform SDK | `@bcbp-solutions-fzc-llc/frontend-sdk` `1.0.0-alpha.6` (peer `^1.0.0-alpha.6`, provided by the shell); `webpack-preset` and `eslint-plugin` `1.0.0-alpha.6`. Never newer than web-shell's |
+| Status | **Baseline for signoff (conditional, see Signoff conditions).** No code exists. This document is written from the IAM screen spec and the structure and rules of the sibling remote `mfe-tender`, not from running code. Where it says "inherited", the rule comes from `mfe-tender`'s LLD or web-shell's; where it says "proposed", it is a decision for review (§15) |
+| Version | `0.1.4`, 25 November 2026 (first draft `0.1`, 24 November). First release target: none set |
+| Host | `web-shell`, mounting this remote at `/t/<slug>/admin/*` with `RemoteBoundary remote="admin"`, no props, `ownerDomain: iam`. **web-shell has no admin route yet** (checked 2026-11-25: `main` after `v0.4.0` mounts `dashboard`, `tenders`, `drafting`, `workflows`; the IAM role-map keys, A6/A8, banners and the read-only notice are in); see [web-shell-iam-handoff.md](web-shell-iam-handoff.md) |
+| Platform SDK | `@bcbp-solutions-fzc-llc/frontend-sdk` `1.0.0-alpha.9` (peer `^1.0.0-alpha.9`, provided by the shell, whose `main` is on alpha.9); `webpack-preset` and `eslint-plugin` `1.0.0-alpha.9`. Never newer than web-shell's |
 | Runtime | React 19, React Router 7, Tailwind 4 + daisyUI 5; Rsbuild 2 (Rspack); nginx on port 8080 (all inherited) |
 | Source of requirements | `iam-product-screen-spec.md` v0.1 (19 Nov 2026), screens E1–E7 and the shared components of §7. Section references "§" below are to that spec unless stated |
 | Siblings | `mfe-tender` (`docs/lld/mfe-tender-lld.md`, whose structure this follows) and `mfe-dashboard` |
-| Not in this remote | `mfe-me` (G1–G6, proposed), C16 (inside `mfe-tender`), A1 sign-up, operator console O1–O4, A2/A4/A5/A6/A8 (web-shell). Reasoning in §2.2 |
+| Not in this remote | `mfe-me` (G1–G6, separate remote, §2.3), C16 (inside `mfe-tender`), A1 sign-up, operator console O1–O4, A2/A4/A5/A6/A8 (web-shell). Reasoning in §2.2 |
 
 ### Revision history
 
 | Version | Date | Change |
 |---|---|---|
 | 0.1 | 2026-11-24 | First draft, before any code |
+| 0.1.1 | 2026-11-25 | Open item #14 resolved: separate remotes (`admin`, `me`). Added §2.3, updated §2.2 and §4.1 |
+| 0.1.2 | 2026-11-25 | #2 resolved for this remote (section nav only; chrome owner unassigned, outside scope). #15 finding recorded. Updated §2.2, §7.12, §15 |
+| 0.1.4 | 2026-11-25 | #3 and #4 resolved by scope acceptance: E2a step 2 only, E4 wireframe only. Updated §1, §2.1, §7.4, §15 |
+| 0.1.3 | 2026-11-25 | #5 resolved (shared identity components in a common package) and #6 resolved (shell-managed navigation). Corrected §4.4: SDK `navigate()` is not a full page load. Added `/nav` to §4.2 |
+
+### Signoff conditions
+
+Signoff accepts this document as the design baseline. It does not close every open item in §15. Conditions:
+
+1. **Scope:** E1, E2, E3, E5, E6, E7 and E2a step 2 only. E4 is wireframe only; E2a step 1 is out (§15 #3, #4).
+2. **Prerequisite to first release, session-context refresh (§15 #15):** the SDK has no refresh; needs a hook in `platform-reactcommon` and a shell callback ([handoff](session-context-refresh-handoff.md)).
+3. **Prerequisite to building screens that show people, shared identity package (§15 #5):** name, home and owner decided and a first alpha published ([handoff](shared-components-and-navigation-handoff.md)).
+4. **Shell navigation:** web-shell confirms or fixes shell-driven moves inside an already-mounted remote, and adds the `/admin/*` and `/me/*` routes (same handoff, §3.3).
+5. **App chrome owner is unassigned (§15 #2):** until decided, nothing links to `/admin`; first release needs at least the interim link list ([handoff](app-chrome-handoff.md)).
+6. **Before the affected screens are built:** IAM answers the §15 #8 questions. Items #9–#13 are tracked build-time work.
+7. SDK findings were checked against the installed `alpha.6` copy, not the pinned `alpha.9`; recheck before the platform team acts.
 
 ### Table of Contents
 
@@ -44,7 +60,7 @@
 
 This LLD records how the remote is to be built and what it promises its host: the exposed module, routes, shared modules, SDK dependencies, the domain rules and data it shows, and how it fails. Once code exists, the code wins over this document.
 
-Unlike `mfe-tender`, which runs on fixtures, **every IAM route this remote calls is Built** (spec §11). The remote has a real backend from the first commit, but it calls **seven** services from the browser (Org & Membership, User Profile, Catalog, Group Mapping, Audit Log, Delegation settings, and later Workflow). Two things are not Built: the Workflow impact-review routes (Proposed, IAM-FE-Q6) and any tenant-facing IdP route (IAM-FE-Q7). Screens that depend on them are marked in §2.1.
+Unlike `mfe-tender`, which runs on fixtures, **every IAM route this remote calls is Built** (spec §11). The remote has a real backend from the first commit, but it calls **seven** services from the browser (Org & Membership, User Profile, Catalog, Group Mapping, Audit Log, Delegation settings, and later Workflow). Two things are not Built: the Workflow impact-review routes (Proposed, IAM-FE-Q6) and any tenant-facing IdP route (IAM-FE-Q7). **Scope accepted for this release (2026-11-25):** E2a ships **step 2 only** (IAM's `409` resolution path) and E4 stays **wireframe-only**. No code calls the missing routes, and no production-ready SSO is promised in this milestone. Enabling either needs backend work first (§15 #3, #4). Affected screens are marked in §2.1.
 
 ## 2. Responsibilities and Boundaries
 
@@ -55,9 +71,9 @@ Unlike `mfe-tender`, which runs on fixtures, **every IAM route this remote calls
 | E1 Users and invitations | Member list, seat meter, pending invitations | `users` | Built |
 | E1a Invite user (dialog) | Create an invitation | n/a | Built |
 | E2 User detail | Roles, departments, suspend, remove, reset MFA | `users/:userId` | Built |
-| E2a Impact review (dialog) | Gate before remove or demote | n/a | Step 2 (IAM 409 path) Built; step 1 (Workflow) **Proposed** |
+| E2a Impact review (dialog) | Gate before remove or demote | n/a | **This release: step 2 only** (IAM 409 path, Built). Step 1 (Workflow impact review) is **out of scope**, no backend route (IAM-FE-Q6) |
 | E3 Departments and role labels | Activate departments, rename level labels | `departments` | Built |
-| E4 Single sign-on | IdP configuration | `sso` | **Blocked**: no tenant-facing route. Wireframe only; do not build |
+| E4 Single sign-on | IdP configuration | `sso` | **Wireframe only this release** (scope accepted): no tenant-facing IdP route (IAM-FE-Q7). No route, no nav entry, no calls, no production SSO commitment |
 | E5 Group mappings | IdP group → department, level, role | `group-mappings` | Built |
 | E6 Tenant settings | Workspace block (owner), delegation policy (admin) | `settings` | Built |
 | E7 Audit log | Search, detail, exports | `audit`, `audit/exports` | Built |
@@ -69,17 +85,34 @@ Unlike `mfe-tender`, which runs on fixtures, **every IAM route this remote calls
 | Concern | Owner |
 |---|---|
 | Sign-in, MFA enrolment, tokens, session, sign-out, workspace switch | SDK `/auth` in web-shell (Keycloak) |
+| App chrome: global header, user menu, admin entry point, workspace switcher | Unassigned; the shell or platform layer once decided (§15 #2, [app-chrome-handoff.md](app-chrome-handoff.md)). This remote ships only its own section nav |
 | Whether an action is allowed | IAM and the gateway (AuthZ Enrichment). This remote only hides what the user cannot do |
 | Role → UI permission map | web-shell `src/domain/rules/permissions.ts` (the eight permissions in spec §4.3) |
 | P-35 (session context: roles, plan, flags) | web-shell owns the port and the call. This remote has no `P-35` adapter and reads the result through `useSessionContext`. How it asks for a refresh is open (§15 #15) |
 | A1 sign-up | A separate app on `signup.bcbpsolutions.com` (`bff-signup`); ownership IAM-FE-Q15 |
 | A2, A4, A5, A6, A8, tenant banners | web-shell (needs P-1, P-27 and `errorCode` branching on P-35 `403`) |
-| G1–G6 (profile, availability, delegations, AI and notification preferences, security) | `mfe-me` (proposed). Different audience (everyone) and weight. Alternative: one `mfe-iam` serving both prefixes |
+| G1–G6 (profile, availability, delegations, AI and notification preferences, security) | `mfe-me`, a **separate remote** (decided, §2.3). Different audience (everyone) and weight |
 | C16 restricted-tender access | `mfe-tender` (IAM-UX-12: reachable only from a tender the user can see). The routes and rules are IAM's |
 | O1–O4 operator console | A separate app on the platform realm |
 | Workflow impact review routes | Workflow service (IAM-FE-Q6) |
 | IdP routes | Org & Membership + Realm Provisioner (IAM-FE-Q7) |
 | Hosting in an environment, the manifest, SRI enforcement, kill switch | Platform deployment, web-shell, SDK `/mfe` |
+
+### 2.3 Remote split (decided)
+
+IAM UI ships as **separate remotes, one per audience**, not a single `mfe-iam`:
+
+| Remote | Container | Mount | Audience | Screens |
+|---|---|---|---|---|
+| `mfe-admin` (this repo) | `admin` | `/t/<slug>/admin/*` | Tenant admins and owners | E1–E7 |
+| `mfe-me` (own repo, own release) | `me` | `/t/<slug>/me/*` | Every member | G1–G6 |
+
+Both use `ownerDomain: iam`. Reason: this matches the planned target architecture and avoids a later remote-boundary refactor. Consequences:
+
+- No code, route, container or manifest entry is shared between the two; the `admin` bundle never contains G1–G6.
+- Anything both need (user chip, department label, member picker; §15 #5) must come from the SDK or a shared singleton in the preset, or be duplicated, until that is settled.
+- Links between `/admin` and `/me` are cross-remote full navigations (§15 #6).
+- Release, SRI, kill switch and manifest entry are per remote.
 
 ## 3. Architecture and Source Layout
 
@@ -123,7 +156,7 @@ src/
 
 The architecture lint (`.dependency-cruiser.cjs`) is carried over from `mfe-tender` with the same 13 components and rules: no SDK storage, metrics or config in `presentation/`, no cycles, nothing from `test/`. A new folder joins a component in the same PR.
 
-**Server state (proposed, §15 #1).** `mfe-tender`'s ADR 0002 keeps TanStack Query and Zustand out until an API exists and review chooses. This remote has an API from day one and real list, paging and cache needs (§10), so the choice is not automatic. The draft design uses SDK `useApi` and a small keyed cache in `infrastructure/api` (§7.2), as the sibling does. If Architecture Review mandates TanStack Query, only `features/` hooks and the cache change; the ports and rules do not.
+**Server state (decided, [ADR 0001](../adr/0001-server-state-with-tanstack-query.md)).** TanStack Query owns server state: queries, mutations and invalidation, with keys that include the workspace slug and one `QueryClient` per mount. HTTP still goes through the SDK `ApiClient` (§5). Only `features/` hooks and `app/` import TanStack Query; ports and rules do not. The `useApi` plus keyed-cache option was rejected as a duplicate of what TanStack Query provides.
 
 ## 4. Runtime Contract with the Shell
 
@@ -140,10 +173,11 @@ This is the SemVer surface. Same model as `mfe-tender` §4 (inherited).
 | Split chunks | Async only; a split entry makes the container global a Promise, which `loadRemote` refuses |
 | Manifest entry | `"admin": { "entry": ".../remoteEntry.js", "version", "ownerDomain": "iam", "integrity": "sha384-…" }`, written by `config/remote-manifest-entry.mjs` at build. `ownerDomain` must be `iam` (a registry domain) or the SDK drops the entry or refuses the metrics |
 | Name rule | `^[a-z][a-z0-9_-]{0,62}$`, not `shell` |
+| Remote split | This remote owns only `admin` (E1–E7). The member self-service screens are the separate `me` remote (§2.3). The container is not renamed to `mfe-iam`, and `ownerDomain` stays `iam` for both |
 
 ### 4.2 Shared modules
 
-`sharedFor('remote')` offers React, React DOM, `@opentelemetry/api` and every SDK subpath as strict singletons (`import: false` for the SDK, never bundled). Subpaths used here: `/auth`, `/config`, `/http` (see §5), `/i18n`, `/logging`, `/metrics`, `/problem`, `/react`, `/storage`. `react-router-dom` is **not** shared. The integration test `remote-entry.test.tsx` from `mfe-tender` is carried over (share keys, no SDK in the bundle, CSS integrity, assets from the remote's public path, nothing environment-specific compiled in).
+`sharedFor('remote')` offers React, React DOM, `@opentelemetry/api` and every SDK subpath as strict singletons (`import: false` for the SDK, never bundled). Subpaths used here: `/auth`, `/config`, `/http` (see §5), `/i18n`, `/logging`, `/metrics`, `/nav`, `/problem`, `/react`, `/storage`. `react-router-dom` is **not** shared. The integration test `remote-entry.test.tsx` from `mfe-tender` is carried over (share keys, no SDK in the bundle, CSS integrity, assets from the remote's public path, nothing environment-specific compiled in).
 
 ### 4.3 Props
 
@@ -168,7 +202,7 @@ None. The shell passes no props to any remote, and this remote reads the user, s
 
 Each page registers its template with `useRouteTemplate`. A user visiting a section they cannot use sees a "not permitted" page, not a redirect.
 
-**Migration from `mfe-dashboard`.** User management exists today at `/t/:slug/dashboard/user-management`, on fixtures (IAM-FE-Q10). When E1 ships here, `mfe-dashboard` keeps a redirect to `/admin/users` for one release. Because the two routers do not hear each other, that redirect must be a full navigation (SDK `/nav` `navigate`), not an in-router `Navigate`.
+**Migration from `mfe-dashboard`.** User management exists today at `/t/:slug/dashboard/user-management`, on fixtures (IAM-FE-Q10). When E1 ships here, `mfe-dashboard` keeps a redirect to `/admin/users` for one release. That redirect uses the SDK `/nav` `navigate('admin', '/t/<slug>/admin/users', { replace: true })`, which goes through the shell's router (no page load) for a same-workspace path, not an in-router `Navigate` from the dashboard's own router. Cross-remote rules and a same-remote gap to confirm: [shared-components-and-navigation-handoff.md](shared-components-and-navigation-handoff.md) §3.
 
 ## 5. Platform SDK Usage
 
@@ -180,7 +214,7 @@ The rule is inherited: anything the SDK provides is used from the SDK through pu
 | Session context (roles, plan, flags, read-only, MFA window) | `useSessionContext`, `useReadOnly`, `useFeatureFlag` | layouts, `useAdminAccess` |
 | Permissions | `Can`, `useHasPermission` | `useAdminAccess` (see §15 #7) |
 | Step-up MFA | `useStepUp` → `{ needed, reauthenticate() }` | reset MFA (E2), any action the gateway guards |
-| API calls | `useApiClient()` or `createApiClient({ mfe: 'admin' })` with route templates (`/tenants/:id/members`), plus `useApi(fn, deps)` for loaders | `infrastructure/api/*`, `features/*` |
+| API calls | `useApiClient()` or `createApiClient({ mfe: 'admin' })` with route templates (`/tenants/:id/members`), wrapped by TanStack Query hooks in `features/*` (ADR 0001) | `infrastructure/api/*`, `features/*` |
 | API errors | `isProblemError` (`/problem`), `problemMessage` (`/i18n`) | `infrastructure/api/problem.ts`, `LoadFailed` |
 | Route naming | `useRouteTemplate` | every page |
 | Logs, metrics | `getLogger({ mfe: 'admin' })`, `getServiceMeter({ mfe: 'admin' })` | telemetry adapter |
@@ -226,7 +260,7 @@ Each port mirrors one service's routes in the spec's §11 and returns domain typ
 | `GroupMappingPort` | GM-1…GM-6 |
 | `AuditPort` | AL-1…AL-4 |
 | `DelegationPolicyPort` | DLG-6, DLG-7 |
-| `WorkflowImpactPort` (Proposed) | `GET /workflows/active-by-user` and the per-row reassign / pause routes |
+| `WorkflowImpactPort` (Proposed; **not implemented this release**) | `GET /workflows/active-by-user` and the per-row reassign / pause routes |
 
 ### 6.3 Rules (`domain/rules/admin-rules.ts`)
 
@@ -269,7 +303,7 @@ Each loader returns `loading`, `failed`, `error`, `reload` (inherited from `useT
 ### 7.2 E1 member list (IAM-UX-4)
 
 1. `GET /tenants/:id/members?limit=50&cursor=` (P-4) returns IDs only: status, roles, departments, `record_version`.
-2. The page collects the page's user IDs and calls `POST /users:batch` once (≤ 200 IDs; 50 per page). `userBatcher` de-duplicates and caches profiles for about 60 seconds (matching the service cache), so the pending-invitations tab, E2 and pickers do not refetch.
+2. The page collects the page's user IDs and calls `POST /users:batch` once (≤ 200 IDs; 50 per page). `userBatcher` de-duplicates and chunks the IDs; results are stored per user ID in the Query cache (`staleTime` about 60 seconds (matching the service cache)), so the pending-invitations tab, E2 and pickers do not refetch.
 3. Rows are joined. `missing[]` → "Unknown user". A `users:batch` failure renders the rows with "Name unavailable"; rows are never hidden.
 4. Department names come from `GET /departments` (cached for the session), level labels from P-12. A catalogue failure shows "Department" and keeps the row.
 5. **No server-side filters or search** (IAM-FE-Q5). Filter by department with P-9; filter by role or status client-side over loaded pages and say so ("Showing matches in the first N members — load more").
@@ -286,10 +320,10 @@ Each loader returns `loading`, `failed`, `error`, `reload` (inherited from `useT
 
 ```
 remove / demote requested
-  └─ step 1 (Proposed): WorkflowImpactPort.activeByUser(userId)
+  └─ step 1 (NOT in this release; no backend route, §15 #3): WorkflowImpactPort.activeByUser(userId)
         non-empty → per-row Reassign | Pause | Let them finish; apply through Workflow; show progress
-        route missing or 5xx → skip step 1 and say the impact check is incomplete (§15 #3)
-  └─ step 2: send the IAM call (P-8 / P-10 / P-11)
+        until it exists: skipped, and the dialog says the workflow impact check is not available yet
+  └─ step 2 (this release): send the IAM call (P-8 / P-10 / P-11)
         409 WORKFLOW_RESOLUTION_REQUIRED { active_workflows, workflow_ids, allowed_actions }
           → ResolutionDialog: replace_delegate (member picker) | stop_workflows (confirm)
           → P-26 { action, replacement_user_id? }
@@ -352,7 +386,7 @@ When `useReadOnly()` is true every mutation is disabled with "Workspace is read-
 
 ### 7.12 Sign-out
 
-Sign-out is the SDK's `useSignOut()`. Where the section chrome appears depends on the open chrome decision (§15 #2).
+Sign-out is the SDK's `useSignOut()`. This remote draws no user menu, so sign-out is called only where a screen needs it (for example after a session-ending action). A global sign-out control belongs to the app chrome, which this remote does not own (§15 #2).
 
 ## 8. Authorization (UI hints)
 
@@ -362,14 +396,14 @@ All checks here are hints. IAM and the gateway decide; a stale hint is corrected
 |---|---|
 | Admin area, E1 read, pickers | `read:members` (every member) |
 | E1/E1a/E2 actions, E3 | `manage:members` (`tenant_admin`, `tenant_owner`) |
-| Grant or remove `tenant_owner` / `tenant_admin` in E2; owner rows in E5 | `manage:roles:admin` (`tenant_owner`) |
+| Grant or remove `tenant_owner` / `tenant_admin` in E2; owner rows in E5 | `manage:admin-roles` (`tenant_owner`) |
 | E6 workspace block | `manage:tenant-settings` (`tenant_owner`) |
 | E4, E5 | `manage:sso` (admin or owner, **and** plan flag; gate on `plan ∈ {pro, enterprise}` until IAM gap G-10 is fixed; not available in the shared trial realm) |
 | E6 delegation block | `manage:delegation-policy` (admin or owner) |
 | E7 | `read:audit` (admin or owner) |
 | Every mutation | Not `useReadOnly()` |
 
-Role names never appear in this repo. These eight keys are added to web-shell's role map; this remote only asks `useHasPermission`. The service account is never a member and never appears here.
+Role names never appear in this repo. These eight keys are in web-shell's role map (`manage:admin-roles` replaces the spec's `manage:roles:admin`, which the SDK's `roleMapAuthorizer` rejects); this remote only asks `useHasPermission`. The service account is never a member and never appears here.
 
 ## 9. i18n
 
@@ -381,7 +415,7 @@ The `catalog.test.ts` and `admin-text.test.ts` equivalents of `mfe-tender` apply
 
 | State | Where | Lifetime |
 |---|---|---|
-| Server data (members, invitations, departments, settings, audit) | In memory behind the keyed cache (§3) | Per mount; user profiles about 60 s; catalogue per session; invalidated by the remote's own writes |
+| Server data (members, invitations, departments, settings, audit) | TanStack Query cache (ADR 0001) | Per mount; user profiles about 60 s; catalogue per session; invalidated by the remote's own writes |
 | Audit filters | URL search string | The URL |
 | Unsent dialog text | `useDraft` → SDK session storage, only just before an SDK redirect (step-up) | Removed once restored |
 | Section nav state, open dialogs, selection | React state | The mount |
@@ -421,7 +455,7 @@ All inherited from `mfe-tender` §12, with these differences.
 
 | Item | `mfe-admin` |
 |---|---|
-| Container, module, port | `admin`, `./App`, dev server port **5004** (`strictPort`, CORS `*`); web-shell's local manifest gets `"admin": { "entry": "http://localhost:5004/remoteEntry.js", "version": "local", "ownerDomain": "iam" }` and `remotes.allowedOrigins` gets the origin |
+| Container, module, port | `admin`, `./App`, dev server port **5006** (web-shell's local manifest already uses 5002–5005) (`strictPort`, CORS `*`); web-shell's local manifest gets `"admin": { "entry": "http://localhost:5006/remoteEntry.js", "version": "local", "ownerDomain": "iam" }` and `remotes.allowedOrigins` gets the origin |
 | Build | `tsc`, then Rsbuild with `pluginPlatform({ role: 'remote', name: 'admin', exposes: { './App': './src/App.tsx' } })`, then `config/remote-manifest-entry.mjs`. A Vite ES-module remote does **not** load through `loadRemote` |
 | SDK | `SdkVersionPlugin` fails the build unless the installed SDK equals the preset's. **Never build against an SDK newer than web-shell's; upgrade the shell first** |
 | Bundle budget | Start from `mfe-tender`'s (entry 230 KB, total 270 KB, largest 85 KB gzip) and re-measure after E7 |
@@ -464,18 +498,18 @@ Layout and stack as `mfe-tender` (Vitest 5, happy-dom, Testing Library; `createT
 
 | # | Item | Owner |
 |---|---|---|
-| 1 | **Server state.** `mfe-tender`'s ADR 0002 defers TanStack Query and Zustand; this remote has a real API, paging and caches from day one. Decide `useApi` plus a keyed cache (this draft) or TanStack Query. Record an ADR before coding | Architecture Review, mfe-admin |
-| 2 | **App chrome.** web-shell has none, and `mfe-tender` draws its own sidebar. Decide who owns the header, user menu (links to `/me`), the admin entry point and the workspace switcher across four remotes. Until then this remote ships only a section nav inside `/admin` | Frontend platform |
-| 3 | **E2a step 1 (Workflow impact review)** needs `GET /workflows/active-by-user` and per-row reassign and pause routes (IAM-FE-Q6, Proposed). Ship step 2 (IAM's 409 path) first, and say so in the dialog when step 1 is unavailable | Workflow |
-| 4 | **E4 SSO** needs a tenant-facing IdP route (IAM-FE-Q7). Wireframe only; no code | Org & Membership, Realm Provisioner |
-| 5 | **Shared IAM components** (user chip, department label, member picker, seat meter, role badges, conflict and resolution dialogs, read-only wrapper, direct uploader). No UI library exists (`platform-design-system` is unpublished; ADR 0003). If `mfe-me`, `mfe-dashboard` and `mfe-tender` also need the chip and picker, a bundled copy per remote duplicates the 60 s `users:batch` cache. Options: an SDK subpath or a shared singleton in the preset (both are changes in `platform-reactcommon`) | Frontend platform |
-| 6 | **Two routers, one URL** (same issue as `mfe-tender` #13). The `/dashboard/user-management` redirect and any cross-remote link must be full navigations. A shared `react-router-dom` singleton would remove the problem | platform-reactcommon, web-shell |
-| 7 | **Permission key shape.** `manage:roles:admin` has three segments; web-shell's type is `${string}:${string}`, but `useHasPermission(action, resource)` takes two arguments. Verify how the SDK parses the key before adding it, or rename (for example `manage:admin-roles`) | web-shell, platform-reactcommon |
+| 1 | ~~Server state.~~ **Resolved 2026-11-25:** TanStack Query, recorded in [ADR 0001](../adr/0001-server-state-with-tanstack-query.md) | Architecture Review, mfe-admin |
+| 2 | ~~App chrome.~~ **Resolved for this remote 2026-11-25:** it ships only its own section navigation inside `/admin`. The global header, user menu, admin entry point and workspace switcher are outside the IAM remotes' scope; their owner is still unassigned and falls to the shell or platform layer. Not a build blocker, but until it is decided no link to `/admin` or `/me` exists anywhere. See [app-chrome-handoff.md](app-chrome-handoff.md) | Frontend platform |
+| 3 | ~~E2a step 1.~~ **Resolved by scope acceptance 2026-11-25:** this release ships step 2 only (IAM's `409` path), and the dialog says the workflow impact check is not available. Step 1 stays out until the Workflow service provides `GET /workflows/active-by-user` and per-row reassign and pause routes (IAM-FE-Q6). Future backend work; no date | Workflow |
+| 4 | ~~E4 SSO.~~ **Resolved by scope acceptance 2026-11-25:** wireframe only. No production-ready SSO is committed in this milestone. Building it needs a tenant-facing IdP route (IAM-FE-Q7) first. Future backend work; no date | Org & Membership, Realm Provisioner |
+| 5 | ~~Shared IAM components.~~ **Resolved 2026-11-25:** because IAM is split, the shared identity components (those used by two or more remotes: user chip, department label, member picker, and any other that gains a second consumer) are extracted into a **common package before implementation**; this remote keeps no copy. Package name, home and owner, and whether it shares a cache, are still to be set (the package shares code, not the Query cache). This blocks screens that show people. See [shared-components-and-navigation-handoff.md](shared-components-and-navigation-handoff.md) §2 | Frontend platform |
+| 6 | ~~Two routers, one URL.~~ **Resolved 2026-11-25:** the shell owns top-level routing, and cross-remote navigation goes through shell-managed routes with SDK `navigate()`, not full-page loads (no shared `react-router-dom` singleton). Still to confirm: a shell-driven move **inside an already-mounted remote** may not reach that remote's own router. See [shared-components-and-navigation-handoff.md](shared-components-and-navigation-handoff.md) §3 | web-shell, platform-reactcommon |
+| 7 | ~~Permission key shape.~~ **Resolved 2026-11-25:** web-shell uses `manage:admin-roles`; spec §4.3 should be updated to match | IAM spec |
 | 8 | **IAM questions that change screens:** IAM-FE-Q3 (seat grace date), Q4 (MFA and last-login columns), Q5 (member search and filters), Q9 (admin list of delegations, for the E2 header), Q12 (gateway-enforced step-up on reset MFA), Q14 (who may grant `tenant_admin`; the UI follows the HLD) | IAM |
 | 9 | **Observability.** Write the `iam_admin_*` inventory, SLOs and dashboard; confirm the `iam` registry domain accepts a Tier 3 service named `admin` | mfe-admin, platform observability |
 | 10 | **Contract suite.** Add an `admin` spec and server entry to web-shell's browser tests; no test yet loads a real remote other than `dashboard` inside the real shell | web-shell, mfe-admin |
 | 11 | **Theme and CSS ownership** when embedded (Tailwind and daisyUI shipped by each remote; same open question as `mfe-tender` #7) | web-shell, platform |
 | 12 | **Realm gaps shown to users** (IAM-FE-Q13: G-5 password policy, G-6 local accounts, G-13 invitation acceptance). E1a and E6 copy must change when they close. Until G-13 is fixed, a user may sign in and still show as pending | Realm Provisioner, Event Consumer |
 | 13 | **Local development against IAM.** Agree whether dev uses the shell's `config/dev-platform.mjs` stand-ins, recorded fixtures, or a shared IAM dev environment, and who maintains the stub | mfe-admin, IAM |
-| 14 | **Remote name and split.** This draft uses one remote per audience (`admin`, `me`). If the team prefers one `mfe-iam`, rename the container, the `ownerDomain` stays `iam`, and §2 and §4 change | Frontend platform |
-| 15 | **Session-context refresh.** P-35 belongs to web-shell, but §7.5, §8 and §11 need the remote to trigger a refresh (after own role change, on `403`, on focus after about 60 s, IAM-UX-2). Confirm the SDK exposes a refresh on `useSessionContext`; if not, it is a change in `platform-reactcommon` or web-shell | web-shell, platform-reactcommon |
+| 14 | ~~Remote name and split.~~ **Resolved 2026-11-25:** separate remotes, one per audience (`admin`, `me`), not one `mfe-iam`. Matches the target architecture and avoids a later remote-boundary refactor. Recorded in §2.3 and §4.1 | Frontend platform |
+| 15 | **Session-context refresh.** P-35 belongs to web-shell, but §7.5, §8 and §11 need the remote to trigger a refresh (after own role change, on `403`, on focus after about 60 s, IAM-UX-2). **Checked 2026-11-25: the SDK exposes no refresh** (`useSessionContext` is read-only; the shell's context store is private). Needs a new SDK hook plus a shell callback; see [session-context-refresh-handoff.md](session-context-refresh-handoff.md) | web-shell, platform-reactcommon |
