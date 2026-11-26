@@ -1,0 +1,673 @@
+basePath: /
+definitions:
+  github_com_BCBP-SOLUTIONS-FZC-LLC_platform-gincommon_v2_internal_problem.FieldError:
+    properties:
+      field:
+        description: Field is the JSON path of the invalid field (e.g. "deadline",
+          "items[0].sku").
+        type: string
+      message:
+        description: |-
+          Message is a fixed phrase ("is required", "must be in the future"). It never
+          echoes the rejected value, which may be PII.
+        type: string
+    type: object
+  http.DeptMappingDTO:
+    properties:
+      created_at:
+        type: string
+      department_id:
+        type: string
+      id:
+        type: string
+      keycloak_group_name:
+        type: string
+      record_version:
+        type: integer
+      tenant_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  http.DeptMappingInput:
+    properties:
+      department_id:
+        type: string
+      keycloak_group_name:
+        type: string
+    required:
+    - department_id
+    - keycloak_group_name
+    type: object
+  http.DeptMappingListRequest:
+    properties:
+      mappings:
+        items:
+          $ref: '#/definitions/http.DeptMappingInput'
+        maxItems: 500
+        type: array
+    required:
+    - mappings
+    type: object
+  http.DeptMappingListResponse:
+    properties:
+      mappings:
+        items:
+          $ref: '#/definitions/http.DeptMappingDTO'
+        type: array
+    type: object
+  http.DeptRoleMappingDTO:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      keycloak_group_name:
+        type: string
+      record_version:
+        type: integer
+      role_code:
+        type: string
+      tenant_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  http.DeptRoleMappingInput:
+    properties:
+      keycloak_group_name:
+        type: string
+      role_code:
+        type: string
+    required:
+    - keycloak_group_name
+    - role_code
+    type: object
+  http.DeptRoleMappingListRequest:
+    properties:
+      mappings:
+        items:
+          $ref: '#/definitions/http.DeptRoleMappingInput'
+        maxItems: 500
+        type: array
+    required:
+    - mappings
+    type: object
+  http.DeptRoleMappingListResponse:
+    properties:
+      mappings:
+        items:
+          $ref: '#/definitions/http.DeptRoleMappingDTO'
+        type: array
+    type: object
+  http.GroupResolutionRequest:
+    properties:
+      groups:
+        items:
+          type: string
+        maxItems: 1000
+        type: array
+    required:
+    - groups
+    type: object
+  http.GroupResolutionResponse:
+    properties:
+      dept_mappings:
+        items:
+          $ref: '#/definitions/http.DeptMappingDTO'
+        type: array
+      dept_role_mappings:
+        items:
+          $ref: '#/definitions/http.DeptRoleMappingDTO'
+        type: array
+      tenant_role_mappings:
+        items:
+          $ref: '#/definitions/http.TenantRoleMappingDTO'
+        type: array
+    type: object
+  http.ProblemResponse:
+    properties:
+      detail:
+        description: |-
+          Detail is a sentence the service wrote about this occurrence. It never
+          carries exception text, SQL, secrets or tenant information.
+        type: string
+      errorCode:
+        description: ErrorCode is the stable, upper snake case, machine-readable code.
+        type: string
+      instance:
+        description: Instance is the request path (never the query string, which may
+          carry tokens).
+        type: string
+      status:
+        description: Status is the HTTP status code; it always equals the response
+          status.
+        type: integer
+      tenantId:
+        description: TenantID is set only for a request with a verified tenant context.
+        type: string
+      timestamp:
+        description: Timestamp is when the problem was created, formatted with TimestampLayout.
+        type: string
+      title:
+        description: Title is the short, fixed summary of the type. It never varies
+          per occurrence.
+        type: string
+      traceId:
+        description: TraceID correlates the response with the server's logs and traces.
+        type: string
+      type:
+        description: |-
+          Type is the absolute, stable type URI ({base}/{domain}/{error}), or
+          "about:blank" for a status without a registered type (RFC 9457 §4.2.1).
+        type: string
+      validationErrors:
+        description: ValidationErrors lists the invalid fields of a validation-failed
+          problem.
+        items:
+          $ref: '#/definitions/github_com_BCBP-SOLUTIONS-FZC-LLC_platform-gincommon_v2_internal_problem.FieldError'
+        type: array
+    type: object
+  http.TenantRoleMappingDTO:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      keycloak_group_name:
+        type: string
+      record_version:
+        type: integer
+      role_code:
+        type: string
+      tenant_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  http.TenantRoleMappingInput:
+    properties:
+      keycloak_group_name:
+        type: string
+      role_code:
+        type: string
+    required:
+    - keycloak_group_name
+    - role_code
+    type: object
+  http.TenantRoleMappingListRequest:
+    properties:
+      mappings:
+        items:
+          $ref: '#/definitions/http.TenantRoleMappingInput'
+        maxItems: 500
+        type: array
+    required:
+    - mappings
+    type: object
+  http.TenantRoleMappingListResponse:
+    properties:
+      mappings:
+        items:
+          $ref: '#/definitions/http.TenantRoleMappingDTO'
+        type: array
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: vijay@bcbpsolutions.com
+    name: BCBP Solutions IAM Team
+  description: |-
+    System of record for group_dept_role_mappings, group_tenant_role_mappings, and group_dept_mappings. Exposes tenant-admin configuration APIs (GM-1..GM-6) and an internal JIT group-resolution API (GM-I1). This service stores no memberships, makes no authorization decisions, and publishes zero events — it only consumes TenantMembershipsPurged.
+
+    **Tenant isolation.** Every resource is scoped by the `:id` path parameter (tenant ID); cross-tenant access is blocked by PostgreSQL Row-Level Security, fail-closed on a missing tenant GUC.
+
+    **Route prefixes.** `/api/v1/*` — tenant-admin users (JWT validated upstream by the gateway; roles forwarded via header). `/internal/*` — mTLS-only, in-mesh callers; no JWT validation is performed by this service for that route.
+
+    Every mapping response includes `record_version`, bumped by the `touch_row()` trigger on any real change.
+  license:
+    name: Proprietary
+  title: Group Mapping & JIT Config Service
+  version: 1.0.0
+paths:
+  /api/v1/tenants/{id}/group-mappings/department-roles:
+    get:
+      description: Returns every group→role_code mapping configured for the tenant.
+        Never returns null — an empty tenant gets an empty array.
+      parameters:
+      - description: Tenant ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.DeptRoleMappingListResponse'
+        "400":
+          description: INVALID_REQUEST — tenant id is not a valid UUID
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "503":
+          description: DB_UNAVAILABLE — Postgres connectivity/resource failure
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+      security:
+      - BearerAuth: []
+      summary: List department-role mappings
+      tags:
+      - department-roles
+    put:
+      consumes:
+      - application/json
+      description: 'Full-replacement reconcile: the request body is the complete desired
+        state for this tenant. Retains unchanged rows, inserts new ones, deletes removed
+        ones — atomically, transactionally, and idempotently.'
+      parameters:
+      - description: Tenant ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Complete desired set of department-role mappings
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/http.DeptRoleMappingListRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.DeptRoleMappingListResponse'
+        "400":
+          description: VALIDATION_FAILED (malformed/empty body or missing field) or
+            INVALID_REQUEST (tenant id or field value invalid)
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "409":
+          description: MAPPING_CONFLICT — a concurrent write to this tenant's mappings
+            is in progress; retry
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "413":
+          description: PAYLOAD_TOO_LARGE — request body over 1 MiB
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "415":
+          description: UNSUPPORTED_MEDIA_TYPE — Content-Type must be application/json
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "503":
+          description: DB_UNAVAILABLE — Postgres connectivity/resource failure
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+      security:
+      - BearerAuth: []
+      summary: Replace department-role mappings
+      tags:
+      - department-roles
+  /api/v1/tenants/{id}/group-mappings/departments:
+    get:
+      description: Returns every group→department mapping configured for the tenant.
+        Never returns null.
+      parameters:
+      - description: Tenant ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.DeptMappingListResponse'
+        "400":
+          description: INVALID_REQUEST — tenant id is not a valid UUID
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "503":
+          description: DB_UNAVAILABLE — Postgres connectivity/resource failure
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+      security:
+      - BearerAuth: []
+      summary: List department mappings
+      tags:
+      - departments
+    put:
+      consumes:
+      - application/json
+      description: Full-replacement reconcile, atomic and idempotent. Every referenced
+        department is validated against the Catalog Service (cache-aside, 600s TTL)
+        before any write — see the 422/503 responses.
+      parameters:
+      - description: Tenant ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Complete desired set of department mappings
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/http.DeptMappingListRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.DeptMappingListResponse'
+        "400":
+          description: VALIDATION_FAILED (malformed/empty body or missing field) or
+            INVALID_REQUEST (tenant id or field value invalid)
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "409":
+          description: MAPPING_CONFLICT — a concurrent write to this tenant's mappings
+            is in progress; retry
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "413":
+          description: PAYLOAD_TOO_LARGE — request body over 1 MiB
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "415":
+          description: UNSUPPORTED_MEDIA_TYPE — Content-Type must be application/json
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "422":
+          description: DEPARTMENT_NOT_IN_CATALOG — the department does not exist or
+            is inactive
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "503":
+          description: CATALOG_SERVICE_UNAVAILABLE or DB_UNAVAILABLE
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+      security:
+      - BearerAuth: []
+      summary: Replace department mappings
+      tags:
+      - departments
+  /api/v1/tenants/{id}/group-mappings/tenant-roles:
+    get:
+      description: Returns every group→tenant_role mapping configured for the tenant.
+        Never returns null.
+      parameters:
+      - description: Tenant ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.TenantRoleMappingListResponse'
+        "400":
+          description: INVALID_REQUEST — tenant id is not a valid UUID
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "503":
+          description: DB_UNAVAILABLE — Postgres connectivity/resource failure
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+      security:
+      - BearerAuth: []
+      summary: List tenant-role mappings
+      tags:
+      - tenant-roles
+    put:
+      consumes:
+      - application/json
+      description: Full-replacement reconcile, atomic and idempotent. role_code must
+        not be "member" — every tenant member already holds it implicitly, so assigning
+        it via a group mapping is rejected with INVALID_ROLE.
+      parameters:
+      - description: Tenant ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Complete desired set of tenant-role mappings
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/http.TenantRoleMappingListRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.TenantRoleMappingListResponse'
+        "400":
+          description: INVALID_ROLE (role_code=member), VALIDATION_FAILED (malformed/empty
+            body or missing field) or INVALID_REQUEST
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "403":
+          description: FORBIDDEN (caller lacks tenant_admin/tenant_owner, or another
+            tenant) or ROLE_ASSIGNMENT_FORBIDDEN (a non-owner added, changed, or removed
+            a tenant_owner mapping)
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "409":
+          description: MAPPING_CONFLICT — a concurrent write to this tenant's mappings
+            is in progress; retry
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "413":
+          description: PAYLOAD_TOO_LARGE — request body over 1 MiB
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "415":
+          description: UNSUPPORTED_MEDIA_TYPE — Content-Type must be application/json
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "503":
+          description: DB_UNAVAILABLE — Postgres connectivity/resource failure
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+      security:
+      - BearerAuth: []
+      summary: Replace tenant-role mappings
+      tags:
+      - tenant-roles
+  /healthz:
+    get:
+      description: Returns ok if the process can answer HTTP and its audit delivery
+        loop is not stalled. Never inspects external dependencies — see /readyz for
+        those.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "503":
+          description: Service Unavailable
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Liveness probe
+      tags:
+      - infra
+  /internal/tenants/{id}/group-resolution:
+    post:
+      consumes:
+      - application/json
+      description: mTLS-only, no JWT validation. Given a set of IdP group names, returns
+        every configured mapping across all three tables whose keycloak_group_name
+        matches one of them (case-insensitively). Pure read with no side effects;
+        unlike the tenant-admin read endpoints, this never reads from or populates
+        gm:mappings:{tenant}:local — every call is a live read. All three response
+        arrays are always present, never null.
+      parameters:
+      - description: Tenant ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: IdP group names from the caller's token/claims
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/http.GroupResolutionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.GroupResolutionResponse'
+        "400":
+          description: VALIDATION_FAILED (malformed/empty body or missing field) or
+            INVALID_REQUEST (tenant id or field value invalid)
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "413":
+          description: PAYLOAD_TOO_LARGE — request body over 1 MiB
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "415":
+          description: UNSUPPORTED_MEDIA_TYPE — Content-Type must be application/json
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+        "503":
+          description: DB_UNAVAILABLE — Postgres connectivity/resource failure
+          schema:
+            $ref: '#/definitions/http.ProblemResponse'
+      summary: Resolve IdP groups to configured mappings (internal)
+      tags:
+      - resolution
+  /readyz:
+    get:
+      description: Returns 503 only if Postgres is unreachable. Valkey and the Catalog
+        Service are reported as "degraded" in checks but never fail readiness.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "503":
+          description: Service Unavailable
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Readiness probe
+      tags:
+      - infra
+tags:
+- description: GM-1/GM-2 — group→(department,dept_role) mappings
+  name: department-roles
+- description: GM-3/GM-4 — group→department mappings, catalog-validated
+  name: departments
+- description: GM-5/GM-6 — group→tenant_role mappings
+  name: tenant-roles
+- description: GM-I1 — internal, mTLS-only JIT group resolution
+  name: resolution
+- description: "Health & metrics (unauthenticated)"
+  name: infra
+securityDefinitions:
+  BearerAuth:
+    description: JWT bearer token, already validated by the upstream API gateway.
+      The gateway forwards the caller's tenant ID, user ID, and roles via x-tenant-id/x-user-id/x-tenant-roles;
+      requireRoles enforces tenant_admin or owner on every GM-1..GM-6 route.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

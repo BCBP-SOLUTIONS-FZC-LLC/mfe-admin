@@ -1,0 +1,13 @@
+{
+  "source": "/Users/balaji/BCBP/xpertpms/docs/IAM_swagger (copied; the IAM service repos' docs/swagger/swagger.json are the originals)",
+  "pinnedOn": "2026-11-25",
+  "note": "The IAM services publish no version tag for these files, so the pin is the SHA-256 of each file. Re-pin with `npm run contracts:pin` after reading the diff.",
+  "files": {
+    "iam-audit-log.yaml": "635c01bee7e7267bde2579ea8eb8dec8533884dab1e71b2ca763065c70c533b0",
+    "iam-catalog-admin.yaml": "90b1bcce7e1ee3f76fafb38f7ba822e0dbdc4e688d523e35f624e286c5e3950c",
+    "iam-delegation.yaml": "70cf6ed5201f156e4cd278bdd130ecfa772574dcd43e55546afcb543daec3cb6",
+    "iam-group-mapping.yaml": "1981bc35bb1e90fe7f59f8c1a0517a42d42e13c250676372d0da6eaeff62fe3b",
+    "iam-org-membership.yaml": "aca5fb1ffe4084f5d48ee2f1b56c0460686b5cca35837cddf535d63e3c7740d2",
+    "iam-user-profile.yaml": "5cede230004e94ec3b9403d47078830bb0d02511c7dbe577a98a33944afc38a4"
+  }
+}

@@ -1,0 +1,10 @@
+# Default: every file requires review from the mfe-admin team.
+* @BCBP-SOLUTIONS-FZC-LLC/mfe-admin
+
+# Workflow and release automation changes require explicit sign-off.
+.github/workflows/ @BCBP-SOLUTIONS-FZC-LLC/mfe-admin
+.github/dependabot.yml @BCBP-SOLUTIONS-FZC-LLC/mfe-admin
+
+# Image and static-host config.
+Dockerfile @BCBP-SOLUTIONS-FZC-LLC/mfe-admin
+nginx/ @BCBP-SOLUTIONS-FZC-LLC/mfe-admin
