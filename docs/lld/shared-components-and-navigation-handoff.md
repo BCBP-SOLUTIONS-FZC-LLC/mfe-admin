@@ -6,6 +6,7 @@
 | From | `mfe-admin` |
 | To | Frontend platform, `platform-reactcommon`, `web-shell`; copied to `mfe-me`, `mfe-tender`, `mfe-dashboard` |
 | Purpose | Record two decisions and what each team must do: (1) shared identity components move to a common package **before implementation**; (2) cross-remote navigation goes through the shell's router, not full-page loads |
+| Status | **Implemented 2026-11-26** (SDK `1.0.0-alpha.10`, web-shell `0.5.0`); mfe-admin aligned. See the section "What shipped" at the end |
 | Related | [mfe-admin-lld.md](mfe-admin-lld.md) §2.3, §4.2, §4.4, §5, §15 #5 and #6; [app-chrome-handoff.md](app-chrome-handoff.md); [web-shell-iam-handoff.md](web-shell-iam-handoff.md) |
 
 ## 1. Decisions (resolved 2026-11-25)
@@ -164,3 +165,9 @@ Steps 1 and 2 **block** IAM screens that show people. Step 3 blocks only cross-r
 - `@bcbp-solutions-fzc-llc/frontend-sdk` `dist/nav/index.d.ts`
 - `mfe-tender/docs/lld/mfe-tender-lld.md` (open item #13, same router issue)
 - [ADR 0001](../adr/0001-server-state-with-tanstack-query.md)
+
+## 8. What shipped and where mfe-admin stands (2026-11-26)
+
+- **Part B (navigation):** shipped. web-shell `0.5.0` mounts `/t/<slug>/admin/*`, and remounts a remote when `navigate()` moves inside it (§3.3 option a). The SDK documents the `navigate()` contract (path decides, `appId` informational) in `1.0.0-alpha.10`. mfe-admin's cross-remote move (Upgrade plan) calls `navigate()` with a full path whose workspace prefix comes from `useSessionContext().slug`; mfe-dashboard's Admin menu does the same. No remote assigns the location.
+- **Part A (identity package):** **not shipped.** No `iam-ui` package or repo exists. mfe-admin keeps its interim user chip, department label and member picker (ADR 0003) and moves to the package when it is published. Seat meter and the 409 dialogs stay local until a second consumer.
+- **`<Writable>`:** the SDK (alpha.10) now has the read-only gate (decision 5c). mfe-admin still reads `useReadOnly()` through `useAdminAccess` (controls disabled with a reason); moving to `<Writable>` is a later cleanup.

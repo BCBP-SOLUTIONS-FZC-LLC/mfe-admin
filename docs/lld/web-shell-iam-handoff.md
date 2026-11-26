@@ -1,5 +1,7 @@
 # web-shell Handoff: IAM Screens
 
+> **Superseded 2026-11-26 where it says "open":** web-shell `0.5.0` mounts `/t/<slug>/admin/*` and `/me/*`, draws the frame (sidebar, user menu, workspace switcher) and the Admin sub-menu, and the SDK is `1.0.0-alpha.10` with the session-context refresh. Items 2 and 3 below (routes, manifest entries) and "no shared chrome" describe the state on 2026-11-25. What stays open: the per-environment manifest entry for `admin`, the production-CSP contract spec in web-shell (mfe-admin LLD §15 #10), and IAM's own gaps.
+
 | Field | Value |
 |---|---|
 | Repo | `xpertpms/web-shell` (`main` after v0.4.0, SDK `1.0.0-alpha.9`) |

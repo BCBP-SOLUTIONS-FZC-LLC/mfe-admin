@@ -15,15 +15,15 @@ This remote has a real IAM API from day one: paged and filtered lists (members, 
 Use TanStack Query for all server state in this remote.
 
 - Reads are queries, writes are mutations, and a successful write invalidates the affected query keys.
-- Query keys are built in one place in `infrastructure/api` and include the workspace slug, so a workspace switch cannot show another workspace's data.
+- Query keys are built in one place, `src/application/queries/keys.ts`, and include the workspace slug, so a workspace switch cannot show another workspace's data. (First written as `infrastructure/api`; moved to `application/` when built, because the feature hooks that use the keys are presentation and may not import infrastructure. The keys are plain arrays, so nothing there knows TanStack Query.)
 - HTTP still goes through the SDK `ApiClient` (route templates, Problem Details, telemetry, auth). TanStack Query only owns caching, request de-duplication, retries and invalidation. It never calls `fetch` itself.
 - `userBatcher` stays as a small batching function (de-duplicate, chunk at 200). Its results are stored per user ID in the Query cache with `staleTime` about 60 s.
-- Retries: none on `4xx`; the default back-off on `5xx` and network errors. `401` is left to the SDK's redirect.
+- Retries: none on `4xx` except `429`; for queries, at most two retries on network errors, client timeouts, `429` and `5xx` (`isRetryableQueryError` in `infrastructure/api/problem.ts`); mutations are never retried. `401` is left to the SDK's redirect.
 - One `QueryClient` per mount of `./App`, created in `app/`, never at module level, and cleared on unmount.
 - Ports and domain rules do not import TanStack Query. Only `features/` hooks and `app/` do. The architecture lint (`.dependency-cruiser.cjs`) gets a rule for this.
 - TanStack Query is a dependency bundled in this remote (the shell shares only React, React DOM, OpenTelemetry and SDK subpaths).
 
-Client state (Zustand) is not decided here. This remote has little of it, and `useDraft` and the SDK's `storage()` cover it today. Revisit if a screen needs shared client state.
+Client state (Zustand) is not decided here. This remote has little of it, and React state, the URL and the SDK's `storage()` (the export job IDs) cover it today. Revisit if a screen needs shared client state.
 
 ## Rejected alternative
 

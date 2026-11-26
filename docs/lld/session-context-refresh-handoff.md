@@ -6,6 +6,7 @@
 | From | `mfe-admin` |
 | To | `platform-reactcommon` (SDK `/react`, `/auth`), `web-shell` |
 | Purpose | A remote has no way to make the shell reload the P-35 session context. `mfe-admin` needs one. Decide who adds it and how |
+| Status | **Implemented 2026-11-26** (SDK `1.0.0-alpha.10`, web-shell `0.5.0`); mfe-admin aligned. See the section "What shipped" at the end |
 | Related | [mfe-admin-lld.md](mfe-admin-lld.md) §7.5, §8, §11, §15 #15; IAM-UX-2; [web-shell-iam-handoff.md](web-shell-iam-handoff.md) §3.1 item 8 |
 
 ## 1. Answer to the open question
@@ -100,3 +101,10 @@ Without it, the admin who demotes themselves keeps seeing admin controls until a
 - `web-shell/src/app/bootstrap/bootstrap.tsx` (context store, `applyContext`), `web-shell/src/infrastructure/api/iam.ts` (`sessionContextSource`, `loadSessionContextOnce`)
 - `@bcbp-solutions-fzc-llc/frontend-sdk` `dist/react/index.d.ts` (`useSessionContext`), `dist/types-*.d.ts` (`SessionContextSource`)
 - `iam-product-screen-spec.md` §8, IAM-UX-2, IAM-FE-Q2
+
+## 9. What shipped (2026-11-26)
+
+- **SDK `1.0.0-alpha.10` (option A):** `useRefreshSessionContext()` in `/react`, stable, coalesced, never rejecting (a failure or a shell without `refreshContext` resolves `false`, one `warn`); `createTestPlatform({ refreshContext })` counts calls (`contextRefreshes`).
+- **web-shell `0.5.0`:** passes `refreshContext` (loads P-35 at once, applies it, `true` when a new context was applied) and refreshes on window focus, at most once a minute (4.2 item 4, option B's complement).
+- **mfe-admin:** `useSessionRefresh` is the SDK hook; `useTrackedMutation` calls it on `DENY_ROLE_INSUFFICIENT` and `RolesCard` after a successful change to the caller's own roles (no retry loop). Pins SDK, webpack-preset and eslint-plugin `1.0.0-alpha.10`. Tests: `test/unit/features/tracked.test.tsx`, `test/unit/pages/user-detail.test.tsx`.
+- **Still open:** decision 7c (IAM P-35 cache lag after P-28), and the other remotes adopting the hook.
