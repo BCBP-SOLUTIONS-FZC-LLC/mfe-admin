@@ -195,7 +195,8 @@ describe(`mfe-admin smoke (${mode}, ${baseUrl})`, () => {
       const e = m[NAME]!
       expect(e.ownerDomain, where(entry, 'ownerDomain')).toBe(OWNER_DOMAIN)
       expect(e.entry, where(entry, 'entry')).toBe('remoteEntry.js')
-      expect(e.version, where(entry, 'version')).toMatch(/^\d+\.\d+\.\d+/)
+      // A release's tag (1.2.3), or a CI build's commit SHA or `dev`: the version names the deploy path /remotes/admin/<version>/, so it must be URL-safe.
+      expect(e.version, where(entry, 'version')).toMatch(/^[0-9A-Za-z][0-9A-Za-z._+-]*$/)
       expect(e.integrity, where(entry, `integrity of ${r.url}`)).toBe(sha384(r.body))
       expectNoCache(entry)
     })
