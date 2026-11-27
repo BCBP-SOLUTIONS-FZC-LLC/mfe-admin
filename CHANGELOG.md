@@ -10,6 +10,10 @@ All notable changes to this remote are documented here. The format follows [Keep
 
 ## [Unreleased]
 
+### Changed (2026-11-27 — cards as in the product reference)
+
+- **Cards have no border and the reference's soft shadow:** `card` in `src/presentation/components/styles.ts` is `rounded-[18px] border border-white/70 bg-aura-surface shadow-dash` (the reference's faint white edge) (it was `rounded-xl` with a `border-aura-border` border), and `shadow-dash` in `tailwind.config.js` is `0 10px 30px rgba(30,27,75,.06), 0 2px 6px rgba(30,27,75,.04)` (the reference's card shadow). The seat meter, tables and settings cards all use it; the dialogs, the drawer and the inner list rows keep their borders.
+
 ### Changed (2026-11-26 — aligned with web-shell 0.5.0 and SDK 1.0.0-alpha.10)
 
 - **Aligned with web-shell's dark sidebar (2026-11-26):** `AdminLayout` is the page outlet only (each page in its own `MFEErrorBoundary`). web-shell's sidebar now draws the Admin sub-menu itself (Users, Departments, Group mappings, Settings, Audit log, each by permission), so this remote draws no navigation; its minimum height reads `--shell-header-height` (the narrow-screen bar, `0px` on a wide screen and standalone). *(Previously: a section navigation of its own in the page area, while the shell had only an Admin link.)* Admin's own Tailwind `.fixed` was overriding the shell's `lg:sticky`; fixed in web-shell (its changelog, 2026-11-26).
