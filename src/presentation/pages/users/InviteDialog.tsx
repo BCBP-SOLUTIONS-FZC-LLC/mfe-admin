@@ -160,7 +160,7 @@ export default function InviteDialog({
           <legend className="text-sm font-medium">{t('invite.departments')}</legend>
           {active.length === 0 && <p className="text-xs text-aura-muted">{t('invite.noDepartments')}</p>}
           {rows.map((row, index) => (
-            <div key={index} className="flex flex-wrap items-center gap-2 rounded-xl border border-aura-border bg-aura-canvas p-2">
+            <div key={index} className="flex flex-wrap items-center gap-2 rounded-xl border border-aura-border bg-aura-surface p-2">
               <select
                 aria-label={t('invite.department')}
                 className={`${input} min-w-40 flex-1`}

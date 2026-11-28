@@ -3,6 +3,7 @@
   "audit.exports": "Exports",
   "audit.back": "Back to the audit log",
   "audit.filters": "Filters",
+  "audit.list.title": "Audit entries",
   "audit.filter.from": "From",
   "audit.filter.to": "To",
   "audit.filter.entryType": "Entry type",

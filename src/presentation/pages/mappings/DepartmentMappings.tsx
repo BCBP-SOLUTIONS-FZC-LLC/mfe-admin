@@ -90,7 +90,7 @@ export default function DepartmentMappings({ current, access, directory, saved, 
       {rows.length > 0 && <RowHeader grid={GRID_DEPT} columns={[t('mappings.dept.group'), t('mappings.dept.department'), t('mappings.dept.level')]} />}
       <ul className="flex flex-col gap-2">
         {rows.map((r, index) => (
-          <li key={r.key} className={`${GRID_DEPT} items-center rounded-xl border p-2 ${(r.departmentId === '') !== (r.level === '') ? 'border-amber-500/60 bg-aura-accent-amber-soft' : 'border-aura-border bg-aura-canvas'}`}>
+          <li key={r.key} className={`${GRID_DEPT} items-center rounded-xl border p-2 ${(r.departmentId === '') !== (r.level === '') ? 'border-amber-500/60 bg-aura-accent-amber-soft' : 'border-aura-border bg-aura-surface'}`}>
             <input aria-label={`${t('mappings.dept.group')} ${index + 1}`} className={input} value={r.groupName} disabled={!editable} onChange={(e) => edit(r.key, { groupName: e.target.value })} />
             <select aria-label={`${t('mappings.dept.department')} ${index + 1}`} className={input} value={r.departmentId} disabled={!editable} onChange={(e) => edit(r.key, { departmentId: e.target.value })}>
               <option value="">{t('mappings.dept.none')}</option>

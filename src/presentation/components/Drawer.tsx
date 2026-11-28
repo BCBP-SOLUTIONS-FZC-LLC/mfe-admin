@@ -16,13 +16,13 @@ export default function Drawer({ title, subtitle, onClose, children }: { title: 
     return () => document.removeEventListener('keydown', onKey)
   }, [onClose])
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-[2px]" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+    <div className="drawer-scrim fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-[2px]" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div
         ref={ref}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="flex h-full w-full max-w-md flex-col overflow-y-auto border-s border-aura-border bg-aura-surface p-6 text-aura-text shadow-2xl"
+        className="drawer-panel flex h-full w-full max-w-md flex-col overflow-y-auto border-s border-aura-border bg-aura-surface p-6 text-aura-text shadow-2xl"
       >
         <h2 id={titleId} className="text-lg font-semibold">
           {title}

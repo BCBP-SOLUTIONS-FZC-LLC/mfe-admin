@@ -136,6 +136,15 @@ describe('E1 members', () => {
   })
 })
 
+/** Opens the filter drawer, sets the given fields and applies; the drawer then closes. */
+async function filterBy(fields: { Status?: string; Role?: string; Department?: string }) {
+  await userEvent.click(screen.getByRole('button', { name: /^Filters/ }))
+  const drawer = await screen.findByRole('dialog', { name: 'Filters' })
+  for (const [label, value] of Object.entries(fields)) await userEvent.selectOptions(within(drawer).getByLabelText(label), value)
+  await userEvent.click(within(drawer).getByRole('button', { name: 'Apply filters' }))
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+}
+
 describe('E1 paging and filters (no server-side filters: IAM-FE-Q5)', () => {
   const second = [{ ...members[1]!, userId: 'u-dee', tenantRoles: [] as never[], departments: [] }]
   const paged = () =>
@@ -157,27 +166,39 @@ describe('E1 paging and filters (no server-side filters: IAM-FE-Q5)', () => {
   it('filters by status and role over the loaded pages, and says matches are only in the first N members', async () => {
     page(ports({ org: { listMembers: paged() as never } }))
     await screen.findByRole('link', { name: /Ada Lovelace/ })
-    await userEvent.selectOptions(screen.getByLabelText('Status'), 'suspended')
+    await filterBy({ Status: 'suspended' })
     expect(screen.queryByRole('link', { name: /Ada Lovelace/ })).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: /Cy Young/ })).toBeInTheDocument()
     expect(screen.getByText('Showing matches in the first 3 members. Load more to search further.')).toBeInTheDocument()
-    await userEvent.selectOptions(screen.getByLabelText('Status'), 'all')
-    await userEvent.selectOptions(screen.getByLabelText('Role'), 'tender_admin')
+    await filterBy({ Status: 'all', Role: 'tender_admin' })
     expect(screen.getByRole('link', { name: /Bob Builder/ })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: /Cy Young/ })).not.toBeInTheDocument()
+  })
+
+  it('slides the filters in from the side, shows how many are on, and hides them after Apply and after Clear', async () => {
+    page(ports())
+    await screen.findByRole('link', { name: /Ada Lovelace/ })
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    await filterBy({ Role: 'tenant_admin' })
+    expect(screen.getByRole('button', { name: /^Filters/ })).toHaveTextContent('Filters1')
+    await userEvent.click(screen.getByRole('button', { name: /^Filters/ }))
+    await userEvent.click(within(await screen.findByRole('dialog', { name: 'Filters' })).getByRole('button', { name: 'Clear' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    expect(screen.getByRole('button', { name: /^Filters/ })).toHaveTextContent(/^Filters$/)
+    expect(screen.getByRole('link', { name: /Cy Young/ })).toBeInTheDocument()
   })
 
   it('says nothing about partial results when every page is loaded', async () => {
     page(ports())
     await screen.findByRole('link', { name: /Ada Lovelace/ })
-    await userEvent.selectOptions(screen.getByLabelText('Status'), 'suspended')
+    await filterBy({ Status: 'suspended' })
     expect(screen.queryByText(/Showing matches/)).not.toBeInTheDocument()
   })
 
   it('says when no loaded member matches', async () => {
     page(ports())
     await screen.findByRole('link', { name: /Ada Lovelace/ })
-    await userEvent.selectOptions(screen.getByLabelText('Role'), 'tenant_admin')
+    await filterBy({ Role: 'tenant_admin' })
     expect(screen.getByText('No members match these filters.')).toBeInTheDocument()
   })
 
@@ -185,7 +206,7 @@ describe('E1 paging and filters (no server-side filters: IAM-FE-Q5)', () => {
     const p = ports()
     page(p)
     await screen.findByRole('link', { name: /Ada Lovelace/ })
-    await userEvent.selectOptions(screen.getByLabelText('Department'), 'd-eng')
+    await filterBy({ Department: 'd-eng' })
     await waitFor(() => expect(screen.queryByRole('link', { name: /Bob Builder/ })).not.toBeInTheDocument())
     expect(screen.getByRole('link', { name: /Ada Lovelace/ })).toBeInTheDocument()
     expect(p.org.listDepartmentMembers).toHaveBeenCalledWith('d-eng', expect.anything())
@@ -194,13 +215,14 @@ describe('E1 paging and filters (no server-side filters: IAM-FE-Q5)', () => {
   it('says so when the department\'s members cannot be loaded', async () => {
     page(ports({ org: { listDepartmentMembers: rs.fn(async () => { throw problem(500, 'INTERNAL') }) } }))
     await screen.findByRole('link', { name: /Ada Lovelace/ })
-    await userEvent.selectOptions(screen.getByLabelText('Department'), 'd-eng')
+    await filterBy({ Department: 'd-eng' })
     expect(await screen.findByText('Department members could not be loaded.')).toBeInTheDocument()
   })
 
   it('offers every role of the vocabulary but member (member is implicit)', async () => {
     page(ports())
     await screen.findByRole('link', { name: /Ada Lovelace/ })
+    await userEvent.click(screen.getByRole('button', { name: /^Filters/ }))
     const options = within(screen.getByLabelText('Role')).getAllByRole('option').map((o) => o.textContent)
     expect(options).toEqual(['All', 'Owner', 'Admin', 'Tender admin'])
   })

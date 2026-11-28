@@ -126,11 +126,17 @@ describe('E7 results', () => {
   })
 })
 
+const openFilters = async () => {
+  await userEvent.click(screen.getByRole('button', { name: /^Filters/ }))
+  return screen.findByRole('dialog', { name: 'Filters' })
+}
+
 describe('E7 filters (kept in the URL)', () => {
   it('reads the filter from the URL into the form and into the search', async () => {
     const p = ports()
     open(p, '/admin/audit?entry_type=auth.login.success&actor_type=user&retention_tier=security_3y&source_service=iam-org-membership&target_type=member&target_id=u-bob')
     await screen.findAllByText('member.suspended', { selector: 'td' })
+    await openFilters()
     expect(screen.getByLabelText('Entry type')).toHaveValue('auth.login.success')
     expect(screen.getByLabelText('Actor type')).toHaveValue('user')
     expect(screen.getByLabelText('Retention')).toHaveValue('security_3y')
@@ -146,11 +152,14 @@ describe('E7 filters (kept in the URL)', () => {
     const p = ports()
     open(p)
     await screen.findAllByText('member.suspended', { selector: 'td' })
+    await openFilters()
     await userEvent.type(screen.getByLabelText('Entry type'), 'config.tenant_setting.changed')
     await userEvent.selectOptions(screen.getByLabelText('Actor type'), 'service_account')
     await userEvent.type(screen.getByLabelText('Target ID'), 'T-9')
     await userEvent.click(screen.getByRole('button', { name: 'Apply filters' }))
     await waitFor(() => expect(screen.getByTestId('where')).toHaveTextContent('entry_type=config.tenant_setting.changed'))
+    // Applying hides the drawer.
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(screen.getByTestId('where').textContent).toContain('actor_type=service_account')
     expect(screen.getByTestId('where').textContent).toContain('target_id=T-9')
     await waitFor(() => expect(p.audit.search).toHaveBeenCalledTimes(2))
@@ -160,6 +169,7 @@ describe('E7 filters (kept in the URL)', () => {
     const p = ports()
     open(p)
     await screen.findAllByText('member.suspended', { selector: 'td' })
+    await openFilters()
     await userEvent.type(screen.getByLabelText('From'), '2026-11-01T09:30')
     await userEvent.click(screen.getByRole('button', { name: 'Apply filters' }))
     await waitFor(() => expect(p.audit.search).toHaveBeenCalledTimes(2))
@@ -171,6 +181,7 @@ describe('E7 filters (kept in the URL)', () => {
     const p = ports()
     open(p)
     await screen.findAllByText('member.suspended', { selector: 'td' })
+    await openFilters()
     const picker = screen.getByLabelText('Actor')
     await waitFor(() => expect(within(picker).getAllByRole('option').length).toBeGreaterThan(3))
     await userEvent.selectOptions(picker, within(picker).getByRole('option', { name: 'Cy Young' }).getAttribute('value')!)
@@ -182,8 +193,12 @@ describe('E7 filters (kept in the URL)', () => {
     const p = ports()
     open(p, '/admin/audit?entry_type=x.y&actor_type=user')
     await screen.findAllByText('member.suspended', { selector: 'td' })
+    await openFilters()
     await userEvent.click(screen.getByRole('button', { name: 'Clear' }))
     await waitFor(() => expect(screen.getByTestId('where')).toHaveTextContent(/^\/admin\/audit$/))
+    // Clearing hides the drawer; reopened, the form is empty.
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    await openFilters()
     expect(screen.getByLabelText('Entry type')).toHaveValue('')
   })
 

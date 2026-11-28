@@ -62,7 +62,7 @@ export default function RoleMappings({ current, access, saved, onSaved, onEdit, 
       {rows.length > 0 && <RowHeader grid={GRID_ROLE} columns={[t('mappings.role.group'), t('mappings.role.role')]} />}
       <ul className="flex flex-col gap-2">
         {rows.map((r, index) => (
-          <li key={r.key} className={`${GRID_ROLE} items-center rounded-xl border border-aura-border bg-aura-canvas p-2`}>
+          <li key={r.key} className={`${GRID_ROLE} items-center rounded-xl border border-aura-border bg-aura-surface p-2`}>
             <input aria-label={`${t('mappings.role.group')} ${index + 1}`} className={input} value={r.groupName} disabled={!editable || locked(r)} onChange={(e) => edit(r.key, { groupName: e.target.value })} />
             <select aria-label={`${t('mappings.role.role')} ${index + 1}`} className={input} value={r.role} disabled={!editable || locked(r)} onChange={(e) => edit(r.key, { role: e.target.value as TenantRole })}>
               {(locked(r) ? TENANT_ROLES : offered).map((role) => (

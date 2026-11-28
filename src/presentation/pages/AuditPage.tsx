@@ -15,6 +15,7 @@ import { btnOutline, btnPrimary } from '../components/styles'
 import { useAdminAccess } from '../features/access/useAdminAccess'
 import { useAuditSearch, useRequestExport } from '../features/audit/useAudit'
 import { useProblemText } from '../features/useProblemText'
+import FilterDrawer from '../components/FilterDrawer'
 import AuditFilters from './audit/AuditFilters'
 import AuditTable, { useActorNames } from './audit/AuditTable'
 import EntryDialog from './audit/EntryDialog'
@@ -27,6 +28,9 @@ const FAILURE_KEYS = {
   'page-too-large': 'audit.error.page',
   'page-too-small': 'audit.error.page',
 } as const satisfies Record<AuditQueryFailure, string>
+
+const activeFilters = (f: AuditFilter) =>
+  [f.entryTypes.length > 0, f.from, f.to, f.actorId, f.actorType, f.targetType, f.targetId, f.sourceService, f.retentionTier].filter(Boolean).length
 
 export default function AuditPage() {
   const t = useT(APP_ID)
@@ -57,6 +61,17 @@ export default function AuditPage() {
           <p className="mt-1 text-sm text-aura-muted">{t('audit.subtitle')}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <FilterDrawer label={t('audit.filters')} active={activeFilters(filter)}>
+            {(close) => (
+              <AuditFilters
+                filter={filter}
+                onApply={(next) => {
+                  apply(next)
+                  close()
+                }}
+              />
+            )}
+          </FilterDrawer>
           <Link to="/admin/audit/exports" className={`${btnOutline} no-underline`}>
             {t('audit.exports')}
           </Link>
@@ -72,7 +87,6 @@ export default function AuditPage() {
         </span>
       )}
 
-      <AuditFilters key={params.toString()} filter={filter} onApply={apply} />
       <FilterChips filter={filter} onChange={apply} />
 
       {!plan.ok && (

@@ -50,6 +50,7 @@ afterEach(() => rs.useRealTimers())
 describe('E7 design', () => {
   it('groups the filters by time, who, what and where', async () => {
     open(ports())
+    await userEvent.click(await screen.findByRole('button', { name: /^Filters/ }))
     const form = await screen.findByRole('form', { name: 'Filters' })
     for (const group of ['Time range', 'Who', 'What', 'Where']) expect(within(form).getByText(group)).toBeInTheDocument()
   })
