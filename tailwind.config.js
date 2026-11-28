@@ -20,6 +20,7 @@ export default {
           border: 'var(--aura-border)',
           text: 'var(--aura-text)',
           muted: 'var(--aura-text-muted)',
+          placeholder: 'var(--aura-placeholder)',
           primary: 'var(--aura-primary)',
           'primary-soft': 'var(--aura-primary-soft)',
           secondary: 'var(--aura-secondary)',

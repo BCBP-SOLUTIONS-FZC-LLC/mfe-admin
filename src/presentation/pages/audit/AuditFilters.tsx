@@ -5,7 +5,7 @@ import { useId, useState } from 'react'
 import { ACTOR_TYPES, RETENTION_TIERS, EMPTY_AUDIT_FILTER, type ActorType, type AuditFilter, type RetentionTier } from '../../../domain/value-objects/AuditFilter'
 import { APP_ID } from '../../../shared/constants/app'
 import MemberPicker from '../../components/identity/MemberPicker'
-import { btnOutline, btnPrimary, card, input } from '../../components/styles'
+import { btnOutline, btnPrimary, input } from '../../components/styles'
 import { fromInputValue, toInputValue } from './datetime'
 
 const ACTOR_KEYS = { user: 'audit.actorType.user', service_account: 'audit.actorType.service_account', iam_system: 'audit.actorType.iam_system', anonymous: 'audit.actorType.anonymous' } as const satisfies Record<ActorType, string>
@@ -54,7 +54,7 @@ export default function AuditFilters({ filter, onApply }: { filter: AuditFilter;
   return (
     <form
       aria-label={t('audit.filters')}
-      className={`${card} grid gap-5 p-4 md:grid-cols-2 xl:grid-cols-4`}
+      className="flex flex-1 flex-col gap-6"
       onSubmit={(e) => {
         e.preventDefault()
         apply()
@@ -124,7 +124,7 @@ export default function AuditFilters({ filter, onApply }: { filter: AuditFilter;
           <input id={`${id}-source`} className={input} value={sourceService} onChange={(e) => setSourceService(e.target.value)} />
         </label>
       </div>
-      <div className="flex items-end gap-2 md:col-span-2 xl:col-span-4">
+      <div className="sticky bottom-0 -mx-6 mt-auto flex items-end gap-2 border-t border-aura-border bg-aura-surface px-6 pt-4">
         <button type="submit" className={btnPrimary}>
           {t('audit.filter.apply')}
         </button>

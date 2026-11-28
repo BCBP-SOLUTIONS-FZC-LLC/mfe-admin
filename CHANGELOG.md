@@ -10,6 +10,18 @@ All notable changes to this remote are documented here. The format follows [Keep
 
 ## [Unreleased]
 
+### Changed (2026-11-28 — card headers and fields as in the product reference)
+
+- **Table cards have a header, and fields have the reference's look:** the member list and the audit entries are one card each with a header (`cardHeader`, `cardTitle` in `src/presentation/components/styles.ts`: the title on the start side, a faint rule under it; on the member list the search and the **Filters** button sit on the end side, as the reference's "Bookings List"). The shared `input` class is white with a thin border, a 6px radius and a brand-colour border on focus, and its **placeholder is a lighter grey** (`--aura-placeholder`, `#858D9C` in the light theme, lightened in the dark one; `aura.css`, `tailwind.config.js`). Catalogue keys `users.list.title`, `audit.list.title`. *(Previously: the member search was in a card of its own above the table, and fields had the grey canvas fill and the body text colour for placeholders.)* No behaviour change.
+
+### Changed (2026-11-28 — filters in a side drawer)
+
+- **Filters open from the right and close after Apply or Clear:** the audit log's filter form and the member list's Status, Role and Department filters are no longer always on the page. A **Filters** button (with the number of filters that are on) opens a drawer that slides in from the end edge (`src/presentation/components/FilterDrawer.tsx`, on `Drawer`, with the `drawer-in` animation in `aura.css`, off for `prefers-reduced-motion`); Apply and Clear both apply and hide it. The audit chips stay under the header, and the member search stays on the page. `src/presentation/pages/users/MemberFilters.tsx` is the member form (it edits a copy and applies on demand). *(Previously: the audit form was a card above the results and the member filters were selects beside the search, applied as they changed.)* Catalogue keys `users.filters`, `users.filter.apply`, `users.filter.clear`. Tests: `users-page`, `audit-page`, `audit-design` open the drawer first and assert it hides; an axe case for the open drawer.
+
+### Changed (2026-11-28 — inputs without the grey background)
+
+- **Inputs and the rows that hold them are white, not grey:** the shared `input` class in `src/presentation/components/styles.ts` uses `bg-aura-surface` (and no longer turns white only on focus), and the invite rows (`InviteDialog.tsx`), role rows (`RoleMappings.tsx`) and department rows (`DepartmentMappings.tsx`) use `bg-aura-surface` instead of `bg-aura-canvas`. *(Previously: the page-canvas grey.)* Selectable pills, info panels and tabs keep their tint. No test changes: no test reads these classes.
+
 ### Changed (2026-11-27 — cards as in the product reference)
 
 - **Cards have no border and the reference's soft shadow:** `card` in `src/presentation/components/styles.ts` is `rounded-[18px] border border-white/70 bg-aura-surface shadow-dash` (the reference's faint white edge) (it was `rounded-xl` with a `border-aura-border` border), and `shadow-dash` in `tailwind.config.js` is `0 10px 30px rgba(30,27,75,.06), 0 2px 6px rgba(30,27,75,.04)` (the reference's card shadow). The seat meter, tables and settings cards all use it; the dialogs, the drawer and the inner list rows keep their borders.

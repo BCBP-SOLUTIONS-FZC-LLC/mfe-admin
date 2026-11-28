@@ -183,6 +183,13 @@ describe('Settings (E6)', () => {
 })
 
 describe('Audit log (E7)', () => {
+  it('the filter drawer', async () => {
+    openApp('/t/acme/admin/audit')
+    await userEvent.click(await screen.findByRole('button', { name: /^Filters/ }, { timeout: 4000 }))
+    await dialog('Filters')
+    await expectAccessible('audit filter drawer')
+  })
+
   it('results, the entry dialog and the exports', async () => {
     openApp('/t/acme/admin/audit')
     await userEvent.click(await screen.findByRole('button', { name: 'Details: member.suspended' }, { timeout: 4000 }))

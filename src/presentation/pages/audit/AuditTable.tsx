@@ -8,7 +8,7 @@ import type { AuditEntry } from '../../../domain/entities/audit'
 import { auditFamilyOf, type AuditFamily } from '../../../domain/vocabulary'
 import { APP_ID } from '../../../shared/constants/app'
 import Avatar from '../../components/identity/Avatar'
-import { btnOutline, table, tableWrap, td, tdMessage, th, tr } from '../../components/styles'
+import { btnOutline, card, cardHeader, cardTitle, table, td, tdMessage, th, tr } from '../../components/styles'
 import { useUserProfiles } from '../../features/identity/useUserProfiles'
 
 const FAMILY_KEYS = {
@@ -81,7 +81,11 @@ export default function AuditTable({ entries, busy, pending, empty, onOpen }: { 
   const t = useT(APP_ID)
   const actorName = useActorNames(entries)
   return (
-    <div className={tableWrap}>
+    <div className={`${card} overflow-hidden`}>
+      <div className={cardHeader}>
+        <h2 className={cardTitle}>{t('audit.list.title')}</h2>
+      </div>
+      <div className="overflow-x-auto">
       <table className={table} aria-busy={busy}>
         <thead>
           <tr>
@@ -134,6 +138,7 @@ export default function AuditTable({ entries, busy, pending, empty, onOpen }: { 
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   )
 }

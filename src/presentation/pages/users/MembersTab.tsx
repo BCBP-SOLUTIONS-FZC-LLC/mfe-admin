@@ -6,28 +6,26 @@ import { useT } from '@bcbp-solutions-fzc-llc/frontend-sdk/react'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { Member, ProfileState } from '../../../domain/entities/member'
-import { TENANT_ROLES, type TenantRole } from '../../../domain/vocabulary'
+import { type TenantRole } from '../../../domain/vocabulary'
 import { APP_ID } from '../../../shared/constants/app'
 import LoadFailed from '../../components/LoadFailed'
 import { AvailabilityDot, SignInBadge, StatusPill, type StatusKind } from '../../components/identity/MemberBadges'
-import { btnOutline, card, input, table, tableWrap, td, tdMessage, th, tr } from '../../components/styles'
+import FilterDrawer from '../../components/FilterDrawer'
+import { btnOutline, card, cardHeader, cardTitle, input, table, td, tdMessage, th, tr } from '../../components/styles'
 import DepartmentLabel from '../../components/identity/DepartmentLabel'
-import RoleBadge, { roleKey } from '../../components/identity/RoleBadge'
+import RoleBadge from '../../components/identity/RoleBadge'
 import UserChip from '../../components/identity/UserChip'
 import type { DepartmentDirectory } from '../../features/identity/useDepartmentDirectory'
 import { useUserProfiles } from '../../features/identity/useUserProfiles'
 import { useDepartmentMembers } from '../../features/members/useDepartmentMembers'
 import { useMemberList } from '../../features/members/useMembers'
-
-type StatusFilter = 'all' | 'active' | 'suspended'
+import MemberFilters, { type StatusFilter } from './MemberFilters'
 
 /** What the status column says: the membership's status, or that sign-in is disabled (User Profile). */
 function statusOf(member: Member, profile: ProfileState | undefined): StatusKind {
   if (profile?.state === 'found' && profile.user.status === 'disabled') return 'disabled'
   return member.status === 'suspended' ? 'suspended' : 'active'
 }
-
-const select = `${input} !w-auto min-w-36`
 
 export default function MembersTab({ directory }: { directory: DepartmentDirectory }) {
   const t = useT(APP_ID)
@@ -59,50 +57,37 @@ export default function MembersTab({ directory }: { directory: DepartmentDirecto
 
   return (
     <div className="flex flex-col gap-3">
-      <div className={`${card} flex flex-wrap items-end gap-3 p-3`}>
-        <label className="flex min-w-56 flex-1 flex-col gap-1 text-xs font-medium text-aura-muted">
-          {t('users.search')}
-          <input type="search" className={input} placeholder={t('users.search.placeholder')} value={query} onChange={(e) => setQuery(e.target.value)} />
-        </label>
-        <label className="flex flex-col gap-1 text-xs font-medium text-aura-muted">
-          {t('users.filter.status')}
-          <select className={select} value={status} onChange={(e) => setStatus(e.target.value as StatusFilter)}>
-            <option value="all">{t('users.filter.all')}</option>
-            <option value="active">{t('users.status.active')}</option>
-            <option value="suspended">{t('users.status.suspended')}</option>
-          </select>
-        </label>
-        <label className="flex flex-col gap-1 text-xs font-medium text-aura-muted">
-          {t('users.filter.role')}
-          <select className={select} value={role} onChange={(e) => setRole(e.target.value as TenantRole | 'all')}>
-            <option value="all">{t('users.filter.all')}</option>
-            {TENANT_ROLES.map((r) => (
-              <option key={r} value={r}>
-                {t(roleKey(r))}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="flex flex-col gap-1 text-xs font-medium text-aura-muted">
-          {t('users.filter.department')}
-          <select className={select} value={department} onChange={(e) => setDepartment(e.target.value)}>
-            <option value="all">{t('users.filter.all')}</option>
-            {directory.departments.map((d) => (
-              <option key={d.departmentId} value={d.departmentId}>
-                {d.name}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-
       {department !== 'all' && inDepartment.isError && (
         <p role="alert" className="text-sm text-red-600">
           {t('users.filter.departmentFailed')}
         </p>
       )}
 
-      <div className={tableWrap}>
+      <div className={`${card} overflow-hidden`}>
+        <div className={cardHeader}>
+          <h2 className={cardTitle}>{t('users.list.title')}</h2>
+          <div className="flex flex-wrap items-center gap-2">
+            <label className="w-60 max-w-full">
+              <span className="sr-only">{t('users.search')}</span>
+              <input type="search" className={`${input} !py-1.5`} placeholder={t('users.search.placeholder')} value={query} onChange={(e) => setQuery(e.target.value)} />
+            </label>
+            <FilterDrawer label={t('users.filters')} active={[status, role, department].filter((v) => v !== 'all').length}>
+              {(close) => (
+                <MemberFilters
+                  directory={directory}
+                  value={{ status, role, department }}
+                  onApply={(next) => {
+                    setStatus(next.status)
+                    setRole(next.role)
+                    setDepartment(next.department)
+                    close()
+                  }}
+                />
+              )}
+            </FilterDrawer>
+          </div>
+        </div>
+        <div className="overflow-x-auto">
         <table className={table} aria-busy={list.isFetching}>
           <thead>
             <tr>
@@ -161,6 +146,7 @@ export default function MembersTab({ directory }: { directory: DepartmentDirecto
             })}
           </tbody>
         </table>
+        </div>
       </div>
 
       {!list.isPending && members.length > 0 && <p className="text-xs text-aura-muted">{t('users.shown', { count: visible.length })}</p>}
